@@ -85,4 +85,39 @@ class UserController extends Controller
             ], 'Authentication Failed',500);
         }
     }
+
+    public function fetch(Request $request) 
+    {
+        return ResponseFormatter::success($request->user(), 'Data profil user berhasil diambil');
+    }
+
+    public function updateProfile(Request $request)
+    {
+        try {
+            $request->validate([
+                'name'=>['required','string','max:255'],
+                'username'=>['required','string','max:255', 'unique:users'],
+                'email'=>['required','email','string','max:255','unique:users'],
+                'phone'=>['nullable','string','max:255'],
+            ]);
+
+            $data = $request->all();
+            $user = Auth::user();
+            $user->update($data);
+
+            return ResponseFormatter::success($user, 'Profile updated');
+
+        } catch(Exception $error) {
+            return ResponseFormatter::error([
+                'message'=> 'Something went wrong',
+                'error' => $error
+            ], 'Authentication Failed',500);
+        }
+    }
+
+    public function logout(Request $request)
+    {
+        $token = $request->user()->currentAccessToken()->delete();
+        return ResponseFormatter::success($token, 'Token revoked');
+    }
 }
